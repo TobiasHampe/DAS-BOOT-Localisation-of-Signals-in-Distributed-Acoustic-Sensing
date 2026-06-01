@@ -4,12 +4,19 @@ channels:
   - defaults
 dependencies:
   - python=3.11
-  - numpy
+  - numpy<2.0.0
   - scipy
   - matplotlib
+  - pandas
+  - pywavelets
+  - pyproj
+  - scikit-image
+  - ipykernel
   - h5py
-  - jupyter
+  - xarray
+  - tqdm
   - folium
+  - contextily
   - pip
   - pip:
-    - arlpy
+      - arlpy

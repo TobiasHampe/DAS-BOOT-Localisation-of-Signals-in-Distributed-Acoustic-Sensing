@@ -32,15 +32,19 @@ grid; the peak gives the vessel position.
 ├── environment.yml
 ├── .gitignore
 │
-├── src/
-│   ├── tt_stacking.py    # Grid search, semblance, Kalman filter, Mahalanobis gate
-│   ├── music.py          # Covariance matrix, eigendecomposition, MUSIC spectrum
-│   └── preprocessing.py  # Butterworth bandpass, FK filter, RMS normalisation,
-│                         # data loading for both .npy and .hdf5 formats
+├── notebooks/
+│   ├── tt_stacking/
+│   │   ├── storebelt_tt_stacking.ipynb
+│   │   └── faroe_tt_stacking.ipynb
+│   └── music/
+│       ├── storebelt_music.ipynb
+│       └── faroe_music.ipynb
 │
-└── notebooks/
-    ├── storebelt_tracking.ipynb   # End-to-end pipeline for the Great Belt dataset
-    └── faroe_tracking.ipynb       # End-to-end pipeline for the Faroe Islands dataset
+└── src/
+    ├── tt_stacking.py    # Grid search, semblance, Kalman filter, Mahalanobis gate
+    ├── music.py          # Covariance matrix, eigendecomposition, MUSIC spectrum
+    └── preprocessing.py  # Butterworth bandpass, FK filter, RMS normalisation,
+                          # data loading for both .npy and .hdf5 formats
 ```
 
 The `data/` directory is excluded from this repository (see `.gitignore`).
@@ -70,14 +74,14 @@ conda activate das-env
 
 ## Quickstart
 
-Open either notebook to run the full pipeline:
+Open a notebook to run the full pipeline, e.g.:
 
 ```bash
-jupyter notebook notebooks/storebelt_tracking.ipynb
+jupyter notebook notebooks/tt_stacking/storebelt_tt_stacking.ipynb
 ```
 
-Both notebooks follow the same structure: load data → preprocess →
-run TT-stacking → run MUSIC → plot tracks against AIS ground truth.
+Each notebook covers one method and one dataset: load data → preprocess →
+localise → plot tracks against AIS ground truth.
 
 ---
 
