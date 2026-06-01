@@ -34,17 +34,22 @@ grid; the peak gives the vessel position.
 │
 ├── notebooks/
 │   ├── tt_stacking/
-│   │   ├── storebelt_tt_stacking.ipynb
-│   │   └── faroe_tt_stacking.ipynb
+│   │   ├── greatbelt_tt_stacking.ipynb   # Great Belt single-ship runner
+│   │   └── faroe_tt_stacking.ipynb       # Faroe–Shetland runner (HDF5)
 │   └── music/
 │       ├── storebelt_music.ipynb
 │       └── faroe_music.ipynb
 │
 └── src/
-    ├── tt_stacking.py    # Grid search, semblance, Kalman filter, Mahalanobis gate
+    ├── preprocessing.py  # Butterworth bandpass, FK filter, RMS normalisation,
+    │                     # data loading for .npy (Great Belt) and .hdf5 (Faroe)
+    ├── tt_stacking.py    # Grid search, semblance, Kalman filter, Mahalanobis gate,
+    │                     # y-sign assignment
     ├── music.py          # Covariance matrix, eigendecomposition, MUSIC spectrum
-    └── preprocessing.py  # Butterworth bandpass, FK filter, RMS normalisation,
-                          # data loading for both .npy and .hdf5 formats
+    ├── config.py         # Per-ship configuration: SHIPS dict, DEFAULT_STACKING_CFG,
+    │                     # get_ship() lookup helper
+    └── plotting.py       # Visualisation: x/y time-series vs AIS, satellite map
+                          # with time-coloured DAS + AIS tracks
 ```
 
 The `data/` directory is excluded from this repository (see `.gitignore`).
@@ -53,7 +58,7 @@ The `data/` directory is excluded from this repository (see `.gitignore`).
 
 ## Data availability
 
-The raw DAS recordings were provided by FMI and GlobalConnect under a data
+The raw DAS recordings were provided by DTU, FMI and GlobalConnect under a data
 agreement and cannot be redistributed. Acquisition parameters for both datasets
 are reported in the thesis (Table 1.2).
 
@@ -74,14 +79,59 @@ conda activate das-env
 
 ## Quickstart
 
-Open a notebook to run the full pipeline, e.g.:
-
 ```bash
-jupyter notebook notebooks/tt_stacking/storebelt_tt_stacking.ipynb
+jupyter notebook notebooks/tt_stacking/greatbelt_tt_stacking.ipynb
 ```
 
-Each notebook covers one method and one dataset: load data → preprocess →
-localise → plot tracks against AIS ground truth.
+Each TT-stacking notebook follows the same five-step flow:
+
+1. **Imports** — load `src` modules via `REPO_ROOT` path injection
+2. **Config / paths** — set data directories, acquisition constants, preprocessing parameters
+3. **One-time setup** — load file list, AIS, cable depth interpolator
+4. **Run ship** — change one line (`SHIP_NAME = "..."`) and re-run to process any ship
+5. **Visualise** — `plot_stacking_vs_ais` (x/y time-series) and `plot_stacking_map` (satellite map)
+
+---
+
+## Ship configuration (`src/config.py`)
+
+All per-ship parameters for the Great Belt dataset live in `src/config.py`:
+
+```python
+from src.config import get_ship
+
+ship = get_ship("STAVFJORD")
+# Returns timing (start/end/crossing), distance window (dmin_km, dmax_km),
+# and a fully-merged stacking config dict ready for **ship["stacking_cfg"]
+```
+
+`DEFAULT_STACKING_CFG` holds the baseline stacking parameters. Individual ships
+override only the keys that differ (e.g. `y_upper`, `x_fairway_lo/hi`).
+
+---
+
+## Visualisation (`src/plotting.py`)
+
+Two functions are available after running `assign_y_sign_stacking`:
+
+**`plot_stacking_vs_ais`** — two-panel time-series  
+Compares along-cable (x) and crosstrack (y) estimates against AIS ground truth.
+Stacking scatter, Kalman-smoothed track, and AIS are plotted on the same time
+axis; a red dashed line marks the cable crossing.
+
+**`plot_stacking_map`** — satellite map  
+Overlays the DAS estimates and AIS track on ESRI World Imagery tiles. Both are
+coloured by the same `RdYlGn` relative-time colormap so matching colours =
+matching time — a single-glance validation of localisation accuracy.
+
+```python
+from src.plotting import plot_stacking_vs_ais, plot_stacking_map
+
+plot_stacking_vs_ais(df_signed, df_ais_ship, crossing_time, CABLE_GEOJSON, ship_name=SHIP_NAME)
+plot_stacking_map(df_signed, df_ais_ship, crossing_time, CABLE_GEOJSON,
+                  ship_name=SHIP_NAME, bound=ship["bound"])
+# show_kalman=True switches the map from raw scatter to Kalman-smoothed track
+```
 
 ---
 
@@ -106,5 +156,5 @@ MIT
 
 ## Acknowledgements
 
-Data provided by FMI and GlobalConnect. Supervised by Henning Heiselberg and
+Data provided by DTU, FMI and GlobalConnect. Supervised by Henning Heiselberg and
 Hasse Bulow Pedersen, Center for Security DTU.

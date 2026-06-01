@@ -1,6 +1,7 @@
 # Confidential DAS data
-data/storebelt/
+data/greatbelt/
 data/faroe/
+data/cable_info/
 
 # Python
 __pycache__/
