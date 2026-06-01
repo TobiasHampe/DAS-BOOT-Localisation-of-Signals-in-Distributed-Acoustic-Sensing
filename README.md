@@ -138,7 +138,7 @@ plot_stacking_map(df_signed, df_ais_ship, crossing_time, CABLE_GEOJSON,
 ## Citation
 
 ```bibtex
-@thesis{hampe2026dasboot,
+@thesis{hampetranegaard2026dasboot,
   author  = {Hampe, Tobias Lollike Bay and Tranegaard, Emil},
   title   = {{DAS BOOT}: Localisation of Signals in Distributed Acoustic Sensing},
   school  = {Technical University of Denmark},
