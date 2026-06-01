@@ -1,0 +1,24 @@
+# Confidential DAS data
+data/storebelt/
+data/faroe/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Environments
+.env
+.venv
+env/
+
+# OS
+.DS_Store
+Thumbs.db

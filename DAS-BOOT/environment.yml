@@ -1,0 +1,15 @@
+name: das-env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - numpy
+  - scipy
+  - matplotlib
+  - h5py
+  - jupyter
+  - folium
+  - pip
+  - pip:
+    - arlpy
