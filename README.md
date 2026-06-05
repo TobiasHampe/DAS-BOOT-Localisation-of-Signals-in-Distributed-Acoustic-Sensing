@@ -13,15 +13,17 @@ against AIS ground truth.
 
 ## Methods
 
-**TT-stacking (TDOA)** — `src/tt_stacking.py`  
+**TT-stacking (TDOA)**  
 Weighted semblance grid search over candidate source positions using traveltime
 differences across cable channels. Per-window estimates are linked into a
-continuous track by a 2D Kalman filter with Mahalanobis gating.
+continuous track by a 2D Kalman filter with Mahalanobis gating. Logic lives in
+`src/` and is imported by the notebooks.
 
-**MUSIC (DOA)** — `src/music.py`  
+**MUSIC (DOA)**  
 Narrowband MUSIC beamformer that decomposes the spatial covariance matrix into
 signal and noise subspaces. The MUSIC spectrum is evaluated over a 2D search
-grid; the peak gives the vessel position.
+grid; the peak gives the vessel position. All code is self-contained inside
+the notebooks as a step-by-step guide.
 
 ---
 
@@ -37,15 +39,14 @@ grid; the peak gives the vessel position.
 │   │   ├── greatbelt_tt_stacking.ipynb   # Great Belt single-ship runner
 │   │   └── faroe_tt_stacking.ipynb       # Faroe–Shetland runner (HDF5)
 │   └── music/
-│       ├── storebelt_music.ipynb
-│       └── faroe_music.ipynb
+│       ├── greatbelt_music.ipynb         # Great Belt step-by-step MUSIC
+│       └── faroe_music.ipynb             # Faroe–Shetland step-by-step MUSIC
 │
-└── src/
+└── src/                                  # Shared modules for TT-stacking only
     ├── preprocessing.py  # Butterworth bandpass, FK filter, RMS normalisation,
     │                     # data loading for .npy (Great Belt) and .hdf5 (Faroe)
     ├── tt_stacking.py    # Grid search, semblance, Kalman filter, Mahalanobis gate,
     │                     # y-sign assignment
-    ├── music.py          # Covariance matrix, eigendecomposition, MUSIC spectrum
     ├── config.py         # Per-ship configuration: SHIPS dict, DEFAULT_STACKING_CFG,
     │                     # get_ship() lookup helper
     └── plotting.py       # Visualisation: x/y time-series vs AIS, satellite map
@@ -77,7 +78,7 @@ conda activate das-env
 
 ---
 
-## Quickstart
+## TT-stacking quickstart
 
 ```bash
 jupyter notebook notebooks/tt_stacking/greatbelt_tt_stacking.ipynb
@@ -91,9 +92,7 @@ Each TT-stacking notebook follows the same five-step flow:
 4. **Run ship** — change one line (`SHIP_NAME = "..."`) and re-run to process any ship
 5. **Visualise** — `plot_stacking_vs_ais` (x/y time-series) and `plot_stacking_map` (satellite map)
 
----
-
-## Ship configuration (`src/config.py`)
+### Ship configuration (`src/config.py`)
 
 All per-ship parameters for the Great Belt dataset live in `src/config.py`:
 
@@ -108,9 +107,7 @@ ship = get_ship("STAVFJORD")
 `DEFAULT_STACKING_CFG` holds the baseline stacking parameters. Individual ships
 override only the keys that differ (e.g. `y_upper`, `x_fairway_lo/hi`).
 
----
-
-## Visualisation (`src/plotting.py`)
+### Visualisation (`src/plotting.py`)
 
 Two functions are available after running `assign_y_sign_stacking`:
 
@@ -132,6 +129,26 @@ plot_stacking_map(df_signed, df_ais_ship, crossing_time, CABLE_GEOJSON,
                   ship_name=SHIP_NAME, bound=ship["bound"])
 # show_kalman=True switches the map from raw scatter to Kalman-smoothed track
 ```
+
+---
+
+## MUSIC quickstart
+
+```bash
+jupyter notebook notebooks/music/faroe_music.ipynb
+```
+
+The MUSIC notebooks are self-contained and require no imports from `src/`.
+Each notebook walks through the full pipeline step by step:
+
+1. **Parameters** — paths, ship metadata, array window, grid extent, frequency
+2. **Load data** — HDF5 files trimmed to the spatial and time window of interest
+3. **Load cable** — GeoJSON/JSON positions mapped to the masked channels
+4. **Load AIS** — ground-truth pings and interpolators for continuous comparison
+5. **Build grid** — rotated 2D UTM search grid projected to lat/lon
+6. **Steering delays** — per-grid-point travel-time differences relative to a reference channel
+7. **MUSIC loop** — windowed bandpass → analytic signal → `arlpy.bf.music` spectrum → peak extraction
+8. **Results** — per-window estimates saved to CSV/JSON with RMSE and median error statistics
 
 ---
 
